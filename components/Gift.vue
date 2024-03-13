@@ -29,6 +29,7 @@ defineProps<{
   transform: translateX(-50%) translateY(-50%);
   left: 50%;
   top: 50%;
+  @apply transition-all duration-1000 ease-out;
 }
 .btn--red {
   background-color: rgba(230,140,140,0.6);
@@ -50,7 +51,7 @@ defineProps<{
 }
 .gift-icon {
   width: 76px;
-  height: 70px;
+  height: 76px;
   display: inline-block;
   background: url('/icons/gift_red.svg') no-repeat 100% center;
 }
@@ -64,6 +65,7 @@ defineProps<{
   background: url('/icons/gift_green.svg') no-repeat 100% center;
 }
 .lock {
+  @apply transition-all duration-1000 ease-out;
   width: 4rem;
   height: 4rem;
   border-radius: 100%;

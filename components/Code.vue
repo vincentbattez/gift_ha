@@ -9,6 +9,9 @@ const code4 = ref<number>();
 const colorTips = ref<string>();
 const stateClass = ref<string>();
 
+const isRedOpened = ref<boolean>(false);
+const isBlueOpened = ref<boolean>(false);
+const isGreenOpened = ref<boolean>(false);
 const showGift = ref<boolean>(false);
 const isShaking = ref<boolean>(false);
 const beepAudio = ref();
@@ -95,6 +98,7 @@ const onSubmit = async () => {
 
   switch ([code1.value, code2.value, code3.value, code4.value].join('')) {
     case codeRed:
+      // 🔴
       HomeAssistantService.triggerEvent('gift_loading_success');
       await wait(11000)
       stateClass.value = 'success'
@@ -103,6 +107,7 @@ const onSubmit = async () => {
       showGift.value = true
       break;
     case codeBlue:
+      // 🔵
       HomeAssistantService.triggerEvent('gift_loading_success');
       await wait(11000)
       stateClass.value = 'success'
@@ -111,6 +116,7 @@ const onSubmit = async () => {
       showGift.value = true
       break;
     case codeGreen:
+      // 🟢
       HomeAssistantService.triggerEvent('gift_loading_success');
       await wait(11000)
       stateClass.value = 'success'
@@ -130,17 +136,30 @@ const onSubmit = async () => {
   }
 };
 
-const onChooseGift = (openingCode: string) => {
+const onChooseGift = async (openingCode: string, color: string) => {
   if (openingCode !== [code1.value, code2.value, code3.value, code4.value].join('')) {
+    console.log('❌')
+    HomeAssistantService.triggerEvent('gift_chest_opening_fail');
+    await wait(8000);
     // @todo fail
-    // sound fail
+    return;
   }
+  console.log('✅')
+  HomeAssistantService.triggerEvent(`gift_chest_opening_success_${color}`);
+  await wait(10000);
+  color === 'red'
+      ? isRedOpened.value = true
+      : color === 'blue'
+          ? isBlueOpened.value = true
+          : isGreenOpened.value = true;
 
-  // @todo
-  // sound chest opening
-  // home assistant event
-  // remove lock
-  // showGift.value = false;
+  await wait(1000);
+  showGift.value = false;
+  code1.value = undefined;
+  code2.value = undefined;
+  code3.value = undefined;
+  code4.value = undefined;
+  stateClass.value = '';
 };
 </script>
 
@@ -219,9 +238,9 @@ const onChooseGift = (openingCode: string) => {
 
     <div class="gift-list flex justify-center mt-10">
       <TransitionGroup name="fade">
-        <Gift v-if="showGift" @click="onChooseGift(codeRed)" color="red" />
-        <Gift v-if="showGift" @click="onChooseGift(codeBlue)" color="blue" class="mx-10"  />
-        <Gift v-if="showGift" @click="onChooseGift(codeGreen)" color="green" />
+        <Gift v-if="showGift || isRedOpened" :class="{ opened: isRedOpened }" @click.prevent="onChooseGift(codeRed, 'red')" color="red" />
+        <Gift v-if="showGift || isBlueOpened" :class="{ opened: isBlueOpened }" @click.prevent="onChooseGift(codeBlue, 'blue')" color="blue" class="mx-10"  />
+        <Gift v-if="showGift || isGreenOpened" :class="{ opened: isGreenOpened }" @click.prevent="onChooseGift(codeGreen, 'green')" color="green" />
       </TransitionGroup>
     </div>
 
@@ -290,6 +309,10 @@ const onChooseGift = (openingCode: string) => {
 
 .shaking {
   animation: shaking 0.15s infinite;
+}
+
+.opened :deep(.btn), .opened :deep(.lock) {
+  opacity: 0;
 }
 
 @keyframes shaking {
