@@ -129,6 +129,10 @@ const onSubmit = async () => {
       HomeAssistantService.triggerEvent('gift_loading_fail');
       await wait(11000)
       stateClass.value = 'fail'
+      code1.value = undefined;
+      code2.value = undefined;
+      code3.value = undefined;
+      code4.value = undefined;
 
       // focus on the first input
       $code1.value.focus();
