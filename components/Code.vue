@@ -35,7 +35,9 @@ onMounted(() => {
 })
 
 const typingEffect = (text: string, speed: number, reverse: boolean = false) => {
-  const textLength = reverse ? colorTips.value?.length : text.length;
+  const textLength = reverse
+      ? colorTips.value?.length ?? 0
+      : text.length ?? 0;
 
   return new Promise((resolve) => {
     let i = 0;
@@ -54,11 +56,12 @@ const typingEffect = (text: string, speed: number, reverse: boolean = false) => 
   });
 };
 
-// on code chance
+// on code change
 watch(fullCodeLength, (length) => {
   $wallE.value.style.left = `${length * 20}px`;
   $eve.value.style.right = `-${length * 8}px`;
   if (length === 4) {
+    wallEEveAudio.value.play();
     isShaking.value = true;
   } else {
     isShaking.value = false;
@@ -77,18 +80,18 @@ const onCodeKeyup = (e, nextCode) => {
 }
 
 const codeRed = '2111';
-const codeBlue = '0000'; // @todo
+const codeBlue = '0824';
 const codeGreen = '1903';
 
-const colorTipsRed = 'Dans la couleur de la passion et des cœurs entrelacés, tu trouveras un contenant pour nos souvenirs les plus précieux.';
-const colorTipsBlue = 'blue'; // @todo
-const colorTipsGreen = 'green'; // @todo
+const colorTipsRed = "Dans la couleur de la passion et des cœurs entrelacés, tu trouveras un contenant pour nos souvenirs les plus précieux.";
+const colorTipsBlue = "Sous un ciel serein et dans la teinte de la concentration, découvre l'outil qui t'accompagnera dans ta quête de savoir."; // @todo
+const colorTipsGreen = "Sur le chemin verdoyant de l'existence, cherche celui qui veille sur tes échanges et protège chaque souvenir partagé."; // @todo
 
 const onSubmit = async () => {
-  wallEEveAudio.value.play();
-  setTimeout(() => {
-    eveLaughtAudio.value.play();
-  }, 1000);
+  typingEffect('', 15, true);
+  showGift.value = false;
+  stateClass.value = 'loading'
+  eveLaughtAudio.value.play();
 
   switch ([code1.value, code2.value, code3.value, code4.value].join('')) {
     case codeRed:
@@ -119,7 +122,6 @@ const onSubmit = async () => {
       // invalid code
       HomeAssistantService.triggerEvent('gift_loading_fail');
       await wait(11000)
-      typingEffect('', 15, true);
       stateClass.value = 'fail'
 
       // focus on the first input
@@ -203,9 +205,10 @@ const onChooseGift = (openingCode: string) => {
           @click.prevent="onSubmit"
           ref="$submit"
           type="submit"
-          class="code-submit bg-gray-400 text-white px-4 rounded-md"
+          class="code-submit bg-gray-500 text-white px-4 rounded-md"
       >
-        <img src="~/assets/icons/key.svg">
+        <span class="loader" />
+        <img class="key" src="~/assets/icons/key.svg">
       </button>
     </div>
 
@@ -227,27 +230,62 @@ const onChooseGift = (openingCode: string) => {
 
 <style scoped>
 .code-item {
-  @apply w-14 h-14 text-4xl text-center bg-gray-100 rounded-md border-b-4 border-gray-400;
-  @apply text-gray-400 font-bold text-center;
+  @apply w-14 h-14 text-4xl text-center bg-gray-100 rounded-md border-b-4 border-gray-500;
+  @apply text-gray-500 font-bold text-center;
+  @apply transition-all duration-700 ease-in-out;
 }
 .code-item:not(:last-child) {
   @apply mr-2;
 }
+.code-submit {
+  @apply transition-all duration-700 ease-in-out;
+  @apply w-14 h-14;
+  @apply relative;
+}
+
+.loader, .key {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  @apply transition-all duration-700 ease-in-out;
+}
+
+.loader {
+  opacity: 0;
+  top: 3px;
+  left: 1px;
+}
 
 .fail .code-item {
-  @apply bg-red-100 border-red-400 text-red-400;
+  @apply bg-red-100 border-red-500 text-red-500;
 }
 
 .fail .code-submit {
-  @apply bg-red-400;
+  @apply bg-red-500;
 }
 
 .success .code-item {
-  @apply bg-green-100 border-green-400 text-green-400;
+  @apply bg-green-100 border-green-500 text-green-500;
 }
 
 .success .code-submit {
-  @apply bg-green-400;
+  @apply bg-green-500;
+}
+
+.loading .code-item {
+  @apply bg-gray-100 border-gray-200 text-gray-200;
+}
+
+.loading .code-submit {
+  @apply bg-blue-500;
+}
+
+.loading .loader {
+  opacity: 1;
+}
+
+.loading .key {
+  opacity: 0;
 }
 
 .shaking {
@@ -272,4 +310,26 @@ const onChooseGift = (openingCode: string) => {
   opacity: 0;
   transform: translateY(30px);
 }
+
+/* Loader */
+.loader {
+  width: 24px;
+  height: 24px;
+  border: 5px dotted #FFF;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 2s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 </style>
